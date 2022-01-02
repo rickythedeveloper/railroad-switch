@@ -12,6 +12,7 @@ class GameScene: SKScene {
     
     fileprivate var label : SKLabelNode?
     fileprivate var spinnyNode : SKShapeNode?
+    var lines: [SKShapeNode] = []
 
     
     class func newGameScene() -> GameScene {
@@ -91,6 +92,7 @@ class GameScene: SKScene {
         line.path = path
         line.strokeColor = color
         self.addChild(line)
+        self.lines.append(line)
     }
 }
 
@@ -105,6 +107,13 @@ extension GameScene {
         
         for t in touches {
             self.makeSpinny(at: t.location(in: self), color: SKColor.green)
+            
+            for l in self.lines {
+                if l.frame.contains(t.location(in: self)) == true {
+                    let rotation = SKAction.rotate(byAngle: 1, duration: 1)
+                    l.run(rotation)
+                }
+            }
         }
     }
     
