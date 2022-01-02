@@ -24,6 +24,7 @@ class GameScene: SKScene {
         // Set the scale mode to scale to fit the window
         scene.scaleMode = .aspectFill
         
+        scene.addLine(start: CGPoint(x: 10, y: 10), end: CGPoint(x: 100, y: 100), color: UIColor.blue)
         return scene
     }
     
@@ -80,6 +81,16 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+    }
+    
+    func addLine(start: CGPoint, end: CGPoint, color: UIColor) {
+        let line = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: start)
+        path.addLine(to: end)
+        line.path = path
+        line.strokeColor = color
+        self.addChild(line)
     }
 }
 
