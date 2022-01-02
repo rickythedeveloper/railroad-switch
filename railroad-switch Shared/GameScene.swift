@@ -60,13 +60,18 @@ class GameScene: SKScene {
         }
         
         self.gameEngine = GameEngine(startTrainInScene: self.startTrain)
+        self.addRailwayNode(position: CGPoint(x: -200, y: 0))
         self.addRailwayNode(position: CGPoint(x: 0, y: 0))
         self.addRailwayNode(position: CGPoint(x: 100, y: 0))
+        self.addRailwayNode(position: CGPoint(x: 0, y: 100))
         self.addRailwayNode(position: CGPoint(x: 100, y: 100))
-        self.addTrack(node1: self.gameEngine.nodes[0], node2: self.gameEngine.nodes[1])
-        self.addTrack(node1: self.gameEngine.nodes[1], node2: self.gameEngine.nodes[2])
+        self.addTrack(singleNode: self.gameEngine.nodes[0], multiNode: [self.gameEngine.nodes[1]])
+        self.addTrack(singleNode: self.gameEngine.nodes[1], multiNode: [self.gameEngine.nodes[2], self.gameEngine.nodes[3]])
+        self.addTrack(singleNode: self.gameEngine.nodes[3], multiNode: [self.gameEngine.nodes[4]])
         self.addTrain(track: self.gameEngine.tracks[0], node: self.gameEngine.nodes[0])
         self.gameEngine.startTrain(train: self.gameEngine.trains[0])
+        
+        self.renderAll()
     }
     
     #if os(watchOS)
@@ -92,30 +97,18 @@ class GameScene: SKScene {
     }
     
     func addRailwayNode(position: CGPoint) {
-        let node = SKShapeNode(circleOfRadius: 20)
-        node.position = position
-        node.fillColor = UIColor.red
-        self.addChild(node)
-        self.gameEngine.nodes.append(RailwayNode(skNode: node, position: position))
+        let railwayNode = RailwayNode(position: position)
+        self.gameEngine.nodes.append(railwayNode)
     }
     
-    func addTrack(node1: RailwayNode, node2: RailwayNode) {
-        let line = SKShapeNode()
-        let path = CGMutablePath()
-        path.move(to: node1.skNode.position)
-        path.addLine(to: node2.skNode.position)
-        line.path = path
-        line.strokeColor = UIColor.yellow
-        self.addChild(line)
-        self.gameEngine.tracks.append(Track(skNode: line, node1: node1, node2: node2))
+    func addTrack(singleNode: RailwayNode, multiNode: [RailwayNode]) {
+        let track = Track(singleNode: singleNode, multiNode: multiNode)
+        self.gameEngine.tracks.append(track)
     }
     
     func addTrain(track: Track, node: RailwayNode) {
-        let rect = SKShapeNode(rectOf: CGSize(width: 30, height: 20))
-        rect.position = node.skNode.position
-        rect.fillColor = UIColor.blue
-        self.addChild(rect)
-        self.gameEngine.trains.append(Train(skNode: rect, track: track, from1To2: track.node1 == node))
+        let train = Train(track: track, node: node)
+        self.gameEngine.trains.append(train)
     }
     
     func startTrain(train: Train, duration: TimeInterval) {
@@ -123,6 +116,12 @@ class GameScene: SKScene {
         let endNode = train.from1To2 ? train.track.node2 : train.track.node1
         train.skNode.position = startingNode.skNode.position
         train.skNode.run(SKAction.move(to: endNode.skNode.position, duration: duration))
+    }
+    
+    func renderAll() {
+        for track in self.gameEngine.tracks { self.addChild(track.skNode) }
+        for railwayNode in self.gameEngine.nodes { self.addChild(railwayNode.skNode) }
+        for train in self.gameEngine.trains { self.addChild(train.skNode) }
     }
 }
 
@@ -137,6 +136,12 @@ extension GameScene {
         
         for t in touches {
             self.makeSpinny(at: t.location(in: self), color: SKColor.green)
+            
+            let touchedNodes = self.nodes(at: t.location(in: self))
+            for n in touchedNodes {
+                let tracks = self.gameEngine.tracks.filter { track in track.skNode == n }
+                tracks.forEach { track in self.gameEngine.switchTrack(track) }
+            }
         }
     }
     

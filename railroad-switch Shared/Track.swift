@@ -11,8 +11,11 @@ class RailwayNode: Equatable {
     let skNode: SKShapeNode
     let position: CGPoint
     
-    init(skNode: SKShapeNode, position: CGPoint) {
-        self.skNode = skNode
+    init(position: CGPoint) {
+        let node = SKShapeNode(circleOfRadius: 20)
+        node.position = position
+        node.fillColor = UIColor.red
+        self.skNode = node
         self.position = position
     }
     
@@ -21,13 +24,44 @@ class RailwayNode: Equatable {
 
 class Track: Equatable {
     let skNode: SKShapeNode
-    let node1: RailwayNode
-    let node2: RailwayNode
+    let singleNode: RailwayNode
+    let multiNode: [RailwayNode]
+    var nodeIndex: Int {
+        didSet {
+            let path = CGMutablePath()
+            path.move(to: node1.skNode.position)
+            path.addLine(to: node2.skNode.position)
+            skNode.path = path
+            for child in skNode.children {
+                (child as! SKShapeNode).path = path
+            }
+        }
+    }
     
-    init(skNode: SKShapeNode, node1: RailwayNode, node2: RailwayNode) {
-        self.skNode = skNode
-        self.node1 = node1
-        self.node2 = node2
+    var node1: RailwayNode {
+        get { singleNode }
+    }
+    var node2: RailwayNode {
+        get { multiNode[nodeIndex] }
+    }
+    
+    init(singleNode: RailwayNode, multiNode: [RailwayNode], nodeIndex: Int = 0) {
+        let bigLine = SKShapeNode()
+        let line = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: singleNode.skNode.position)
+        path.addLine(to: multiNode[nodeIndex].skNode.position)
+        bigLine.strokeColor = UIColor.clear
+        bigLine.lineWidth = 50
+        line.strokeColor = multiNode.count == 1 ? UIColor.yellow : UIColor.green
+        line.lineWidth = 10
+        line.path = path
+        bigLine.path = path
+        bigLine.addChild(line)
+        self.skNode = bigLine
+        self.singleNode = singleNode
+        self.multiNode = multiNode
+        self.nodeIndex = nodeIndex
     }
     
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
@@ -38,10 +72,13 @@ class Train {
     var track: Track
     var from1To2: Bool
     
-    init(skNode: SKShapeNode, track: Track, from1To2: Bool) {
-        self.skNode = skNode
+    init(track: Track, node: RailwayNode) {
+        let rect = SKShapeNode(rectOf: CGSize(width: 30, height: 20))
+        rect.position = node.skNode.position
+        rect.fillColor = UIColor.blue
+        self.skNode = rect
         self.track = track
-        self.from1To2 = from1To2
+        self.from1To2 = track.node1 == node
     }
 }
 
@@ -86,8 +123,12 @@ class GameEngine {
         self.startTrainInScene(train, time)
     }
     
-    func getTrackDistance(_ track: Track) -> Double {
-        let delta = track.node2.position - track.node1.position
-        return (pow(Double(delta.x), 2) + pow(Double(delta.y), 2)).squareRoot()
+    func getTrackDistance(_ track: Track) -> Double { CGPoint.getDistanceBetween(track.node1.position, track.node2.position) }
+    
+    func switchTrack(_ track: Track) {
+        for t in self.trains {
+            if t.track == track { return }
+        }
+        track.nodeIndex = track.nodeIndex == track.multiNode.count - 1 ? 0 : track.nodeIndex + 1
     }
 }
