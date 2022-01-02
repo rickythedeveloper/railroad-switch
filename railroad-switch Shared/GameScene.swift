@@ -12,6 +12,8 @@ class GameScene: SKScene {
     
     fileprivate var label : SKLabelNode?
     fileprivate var spinnyNode : SKShapeNode?
+    var lines: [SKShapeNode] = []
+    var rects: [SKShapeNode] = []
 
     
     class func newGameScene() -> GameScene {
@@ -24,6 +26,8 @@ class GameScene: SKScene {
         // Set the scale mode to scale to fit the window
         scene.scaleMode = .aspectFill
         
+        scene.addLine(pivot: CGPoint(x: 50, y: 50), end: CGPoint(x: 100, y: 100), color: UIColor.blue)
+        scene.addRect(center: CGPoint(x: 0, y: 0), size: CGSize(width: 20, height: 20), color: UIColor.red)
         return scene
     }
     
@@ -81,6 +85,28 @@ class GameScene: SKScene {
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
     }
+    
+    func addLine(pivot: CGPoint, end: CGPoint, color: UIColor=UIColor.white) {
+        let line = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: CGPoint.zero)
+        
+        path.addLine(to: end - pivot)
+        line.path = path
+        line.strokeColor = color
+        line.position = pivot
+        self.addChild(line)
+        self.lines.append(line)
+    }
+    
+    func addRect(center: CGPoint, size: CGSize, color: UIColor=UIColor.white) {
+        let rect = SKShapeNode(rectOf: size)
+        rect.position = center
+        rect.fillColor = color
+        rect.strokeColor = UIColor.clear
+        self.addChild(rect)
+        self.rects.append(rect)
+    }
 }
 
 #if os(iOS) || os(tvOS)
@@ -94,6 +120,17 @@ extension GameScene {
         
         for t in touches {
             self.makeSpinny(at: t.location(in: self), color: SKColor.green)
+            
+            for l in self.lines {
+                if l.frame.contains(t.location(in: self)) == true {
+                    let rotation = SKAction.rotate(byAngle: 1, duration: 1)
+                    l.run(rotation)
+                }
+            }
+            
+            for r in self.rects {
+                r.run(SKAction.move(to: CGPoint(x: 100, y: 100), duration: 1))
+            }
         }
     }
     
