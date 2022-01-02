@@ -7,14 +7,11 @@
 
 import SpriteKit
 
-typealias NodeID = Int
-
 class RailwayNode: Equatable {
     let skNode: SKShapeNode
     let position: CGPoint
     
     init(skNode: SKShapeNode, position: CGPoint) {
-//        self.id = id
         self.skNode = skNode
         self.position = position
     }
@@ -22,16 +19,12 @@ class RailwayNode: Equatable {
     static func ==(lhs: RailwayNode, rhs: RailwayNode) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
 }
 
-typealias TrackID = Int
-
 class Track: Equatable {
-//    let id: TrackID
     let skNode: SKShapeNode
     let node1: RailwayNode
     let node2: RailwayNode
     
     init(skNode: SKShapeNode, node1: RailwayNode, node2: RailwayNode) {
-//        self.id = id
         self.skNode = skNode
         self.node1 = node1
         self.node2 = node2
@@ -40,10 +33,7 @@ class Track: Equatable {
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
 }
 
-typealias TrainID = Int
-
 class Train {
-//    let id: TrainID
     let skNode: SKShapeNode
     var track: Track
     var from1To2: Bool
@@ -77,9 +67,9 @@ class GameEngine {
                 return
             }
         }
-        print("No new track found")
         
 //        If no tracks found then do something?
+        print("No new track found")
     }
     
     func startTrain(train: Train) {
