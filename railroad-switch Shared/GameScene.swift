@@ -15,6 +15,12 @@ class GameScene: SKScene {
     
     var gameEngine: GameEngine!
     private let TRAIN_ANIMATION_KEY = "train-animation"
+    private var scoreLabel: SKLabelNode!
+    var score: Int = 0 {
+        didSet {
+            self.scoreLabel.text = "Score: \(self.score)"
+        }
+    }
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -29,7 +35,7 @@ class GameScene: SKScene {
     }
     
     func setUpScene() {
-        self.gameEngine = GameEngine(moveTrainInScene: self.moveTrain, pauseTrainInScene: self.pauseTrain)
+        self.gameEngine = GameEngine(moveTrainInScene: self.moveTrain, pauseTrainInScene: self.pauseTrain, trainDidReachGoal: self.trainDidReachGoal)
         self.addJoint(position: CGPoint(x: -200, y: 0))
         self.addJoint(position: CGPoint(x: 0, y: 0))
         self.addJoint(position: CGPoint(x: 100, y: 0))
@@ -44,6 +50,14 @@ class GameScene: SKScene {
         self.gameEngine.startTrain(train: self.gameEngine.trains[0])
         
         self.renderAll()
+        
+        self.scoreLabel = SKLabelNode(fontNamed: "ScoreLabel")
+        self.scoreLabel.fontSize = 15
+        self.scoreLabel.fontColor = SKColor.white
+        self.scoreLabel.text = "Score: ----"
+        self.scoreLabel.position = CGPoint(x: self.frame.width/2 - scoreLabel.frame.width/2 - 10, y: self.frame.height/2 - scoreLabel.frame.height/2 - 10)
+        self.addChild(self.scoreLabel)
+        self.score = 0
     }
     
     #if os(watchOS)
@@ -82,6 +96,8 @@ class GameScene: SKScene {
     func pauseTrain(_ train: Train) {
         train.skNode.removeAction(forKey: TRAIN_ANIMATION_KEY)
     }
+    
+    func trainDidReachGoal() { self.score += 1 }
     
     func renderAll() {
         for track in self.gameEngine.tracks { self.addChild(track.skNode) }

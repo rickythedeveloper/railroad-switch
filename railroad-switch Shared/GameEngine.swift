@@ -103,17 +103,23 @@ class GameEngine {
     var trainTimers: [Train: TimerInfo] = [:]
     let moveTrainInScene: (_ train: Train,_ joint: Joint,_ duration: TimeInterval) -> Void
     let pauseTrainInScene: (_ train: Train) -> Void
+    let trainDidReachGoal: () -> Void
     
-    init(moveTrainInScene: @escaping (_ train: Train,_ joint: Joint,_ duration: TimeInterval) -> Void, pauseTrainInScene: @escaping (_ train: Train) -> Void) {
+    init(
+        moveTrainInScene: @escaping (_ train: Train,_ joint: Joint,_ duration: TimeInterval) -> Void,
+        pauseTrainInScene: @escaping (_ train: Train) -> Void,
+        trainDidReachGoal: @escaping () -> Void
+    ) {
         self.moveTrainInScene = moveTrainInScene
         self.pauseTrainInScene = pauseTrainInScene
+        self.trainDidReachGoal = trainDidReachGoal
     }
     
     func trainDidArriveAtNode(train: Train) {
         let currentTrack = train.track
         let currentJoint = train.from1To2 ? currentTrack.joint2 : currentTrack.joint1
         if currentJoint == train.goalJoint {
-            print("Goal reached!")
+            self.trainDidReachGoal()
             return
         }
         for newTrack in self.tracks {
