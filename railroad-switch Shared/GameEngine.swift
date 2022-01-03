@@ -28,7 +28,8 @@ class Joint: Equatable {
 }
 
 class Track: Equatable {
-    let skNode: SKShapeNode
+    let skNode: SKNode // parent for the main and dummy nodes
+    let mainNode: SKShapeNode
     private var currentLength: Double
     var currentAngle: Double
     let singleJoint: Joint
@@ -37,9 +38,9 @@ class Track: Equatable {
         didSet {
             let newLength = CGPoint.getDistanceBetween(self.joint1.skNode.position, self.joint2.skNode.position)
             let newAngle = (self.joint2.skNode.position - self.joint1.skNode.position).angle
-            self.skNode.run(SKAction.scaleX(by: newLength / currentLength, y: 1, duration: ANIMATION_DURATION))
+            self.mainNode.run(SKAction.scaleX(by: newLength / currentLength, y: 1, duration: ANIMATION_DURATION))
             currentLength = newLength
-            self.skNode.run(SKAction.rotate(toAngle: newAngle, duration: ANIMATION_DURATION))
+            self.mainNode.run(SKAction.rotate(toAngle: newAngle, duration: ANIMATION_DURATION))
         }
     }
     
@@ -56,10 +57,28 @@ class Track: Equatable {
         self.jointIndex = jointIndex
         self.currentLength = CGPoint.getDistanceBetween(singleJoint.skNode.position, multiJoint[jointIndex].skNode.position)
         self.currentAngle = (multiJoint[jointIndex].skNode.position - singleJoint.skNode.position).angle
-        self.skNode = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: self.currentLength + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
-        self.skNode.strokeColor = .white
+        
+        self.skNode = SKNode()
         self.skNode.position = singleJoint.skNode.position
-        self.skNode.run(SKAction.rotate(toAngle: self.currentAngle, duration: 0))
+        
+        if multiJoint.count > 1 {
+            for j in multiJoint {
+                let length = CGPoint.getDistanceBetween(singleJoint.skNode.position, j.skNode.position)
+                let angle = (j.skNode.position - singleJoint.skNode.position).angle
+                let dummy = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: length + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
+                dummy.strokeColor = .darkGray
+                dummy.position = CGPoint.zero
+                dummy.run(SKAction.rotate(toAngle: angle, duration: 0))
+                self.skNode.addChild(dummy)
+            }
+        }
+        
+        let main = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: self.currentLength + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
+        main.strokeColor = .white
+        main.position = CGPoint.zero
+        self.mainNode = main
+        self.mainNode.run(SKAction.rotate(toAngle: self.currentAngle, duration: 0))
+        self.skNode.addChild(main)
     }
     
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
