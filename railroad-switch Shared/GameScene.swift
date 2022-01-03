@@ -60,15 +60,17 @@ class GameScene: SKScene {
         }
         
         self.gameEngine = GameEngine(startTrainInScene: self.startTrain)
-        self.addRailwayNode(position: CGPoint(x: -200, y: 0))
-        self.addRailwayNode(position: CGPoint(x: 0, y: 0))
-        self.addRailwayNode(position: CGPoint(x: 100, y: 0))
-        self.addRailwayNode(position: CGPoint(x: 0, y: 100))
-        self.addRailwayNode(position: CGPoint(x: 100, y: 100))
-        self.addTrack(singleNode: self.gameEngine.nodes[0], multiNode: [self.gameEngine.nodes[1]])
-        self.addTrack(singleNode: self.gameEngine.nodes[1], multiNode: [self.gameEngine.nodes[2], self.gameEngine.nodes[3]])
-        self.addTrack(singleNode: self.gameEngine.nodes[3], multiNode: [self.gameEngine.nodes[4]])
-        self.addTrain(track: self.gameEngine.tracks[0], node: self.gameEngine.nodes[0], goalNode: self.gameEngine.nodes[2])
+        self.addJoint(position: CGPoint(x: -200, y: 0))
+        self.addJoint(position: CGPoint(x: 0, y: 0))
+        self.addJoint(position: CGPoint(x: 100, y: 0))
+        self.addJoint(position: CGPoint(x: 200, y: 0))
+        self.addJoint(position: CGPoint(x: 100, y: 100))
+        self.addJoint(position: CGPoint(x: 200, y: 100))
+        self.addTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]])
+        self.addTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]])
+        self.addTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]])
+        self.addTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]])
+        self.addTrain(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
         self.gameEngine.startTrain(train: self.gameEngine.trains[0])
         
         self.renderAll()
@@ -96,31 +98,31 @@ class GameScene: SKScene {
         // Called before each frame is rendered
     }
     
-    func addRailwayNode(position: CGPoint) {
-        let railwayNode = RailwayNode(position: position)
-        self.gameEngine.nodes.append(railwayNode)
+    func addJoint(position: CGPoint) {
+        let joint = Joint(position: position)
+        self.gameEngine.joints.append(joint)
     }
     
-    func addTrack(singleNode: RailwayNode, multiNode: [RailwayNode]) {
-        let track = Track(singleNode: singleNode, multiNode: multiNode)
+    func addTrack(singleJoint: Joint, multiJoint: [Joint]) {
+        let track = Track(singleJoint: singleJoint, multiJoint: multiJoint)
         self.gameEngine.tracks.append(track)
     }
     
-    func addTrain(track: Track, node: RailwayNode, goalNode: RailwayNode) {
-        let train = Train(track: track, node: node, goalNode: goalNode)
+    func addTrain(track: Track, joint: Joint, goalJoint: Joint) {
+        let train = Train(track: track, joint: joint, goalJoint: goalJoint)
         self.gameEngine.trains.append(train)
     }
     
     func startTrain(train: Train, duration: TimeInterval) {
-        let startingNode = train.from1To2 ? train.track.node1 : train.track.node2
-        let endNode = train.from1To2 ? train.track.node2 : train.track.node1
-        train.skNode.position = startingNode.skNode.position
-        train.skNode.run(SKAction.move(to: endNode.skNode.position, duration: duration))
+        let startJoint = train.from1To2 ? train.track.joint1 : train.track.joint2
+        let endJoint = train.from1To2 ? train.track.joint2 : train.track.joint1
+        train.skNode.position = startJoint.skNode.position
+        train.skNode.run(SKAction.move(to: endJoint.skNode.position, duration: duration))
     }
     
     func renderAll() {
         for track in self.gameEngine.tracks { self.addChild(track.skNode) }
-        for railwayNode in self.gameEngine.nodes { self.addChild(railwayNode.skNode) }
+        for joint in self.gameEngine.joints { self.addChild(joint.skNode) }
         for train in self.gameEngine.trains { self.addChild(train.skNode) }
     }
 }

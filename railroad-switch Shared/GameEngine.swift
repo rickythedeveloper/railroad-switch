@@ -7,7 +7,7 @@
 
 import SpriteKit
 
-class RailwayNode: Equatable {
+class Joint: Equatable {
     let skNode: SKShapeNode
     let position: CGPoint
     
@@ -19,18 +19,18 @@ class RailwayNode: Equatable {
         self.position = position
     }
     
-    static func ==(lhs: RailwayNode, rhs: RailwayNode) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
+    static func ==(lhs: Joint, rhs: Joint) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
 }
 
 class Track: Equatable {
     let skNode: SKShapeNode
-    let singleNode: RailwayNode
-    let multiNode: [RailwayNode]
-    var nodeIndex: Int {
+    let singleJoint: Joint
+    let multiJoint: [Joint]
+    var jointIndex: Int {
         didSet {
             let path = CGMutablePath()
-            path.move(to: node1.skNode.position)
-            path.addLine(to: node2.skNode.position)
+            path.move(to: joint1.skNode.position)
+            path.addLine(to: joint2.skNode.position)
             skNode.path = path
             for child in skNode.children {
                 (child as! SKShapeNode).path = path
@@ -38,30 +38,30 @@ class Track: Equatable {
         }
     }
     
-    var node1: RailwayNode {
-        get { singleNode }
+    var joint1: Joint {
+        get { singleJoint }
     }
-    var node2: RailwayNode {
-        get { multiNode[nodeIndex] }
+    var joint2: Joint {
+        get { multiJoint[jointIndex] }
     }
     
-    init(singleNode: RailwayNode, multiNode: [RailwayNode], nodeIndex: Int = 0) {
+    init(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) {
         let bigLine = SKShapeNode()
         let line = SKShapeNode()
         let path = CGMutablePath()
-        path.move(to: singleNode.skNode.position)
-        path.addLine(to: multiNode[nodeIndex].skNode.position)
+        path.move(to: singleJoint.skNode.position)
+        path.addLine(to: multiJoint[jointIndex].skNode.position)
         bigLine.strokeColor = UIColor.clear
         bigLine.lineWidth = 50
-        line.strokeColor = multiNode.count == 1 ? UIColor.yellow : UIColor.green
+        line.strokeColor = multiJoint.count == 1 ? UIColor.yellow : UIColor.green
         line.lineWidth = 10
         line.path = path
         bigLine.path = path
         bigLine.addChild(line)
         self.skNode = bigLine
-        self.singleNode = singleNode
-        self.multiNode = multiNode
-        self.nodeIndex = nodeIndex
+        self.singleJoint = singleJoint
+        self.multiJoint = multiJoint
+        self.jointIndex = jointIndex
     }
     
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
@@ -71,21 +71,21 @@ class Train {
     let skNode: SKShapeNode
     var track: Track
     var from1To2: Bool
-    var goalNode: RailwayNode
+    var goalJoint: Joint
     
-    init(track: Track, node: RailwayNode, goalNode: RailwayNode) {
+    init(track: Track, joint: Joint, goalJoint: Joint) {
         let rect = SKShapeNode(rectOf: CGSize(width: 30, height: 20))
-        rect.position = node.skNode.position
+        rect.position = joint.skNode.position
         rect.fillColor = UIColor.blue
         self.skNode = rect
         self.track = track
-        self.from1To2 = track.node1 == node
-        self.goalNode = goalNode
+        self.from1To2 = track.joint1 == joint
+        self.goalJoint = goalJoint
     }
 }
 
 class GameEngine {
-    var nodes: [RailwayNode] = []
+    var joints: [Joint] = []
     var tracks: [Track] = []
     var trains: [Train] = []
     let startTrainInScene: (_ train: Train,_ duration: TimeInterval) -> Void
@@ -96,16 +96,16 @@ class GameEngine {
     
     func trainDidArriveAtNode(train: Train) {
         let currentTrack = train.track
-        let arrivingNode = train.from1To2 ? currentTrack.node2 : currentTrack.node1
-        if arrivingNode == train.goalNode {
+        let currentJoint = train.from1To2 ? currentTrack.joint2 : currentTrack.joint1
+        if currentJoint == train.goalJoint {
             print("Goal reached!")
             return
         }
         for newTrack in self.tracks {
             guard newTrack != currentTrack else { continue }
-            if newTrack.node1 == arrivingNode || newTrack.node2 == arrivingNode {
+            if newTrack.joint1 == currentJoint || newTrack.joint2 == currentJoint {
                 train.track = newTrack
-                train.from1To2 = newTrack.node1 == arrivingNode
+                train.from1To2 = newTrack.joint1 == currentJoint
                 self.startTrain(train: train)
                 return
             }
@@ -115,9 +115,6 @@ class GameEngine {
     }
     
     func startTrain(train: Train) {
-        let start = train.from1To2 ? train.track.node1 : train.track.node2
-        let end = train.from1To2 ? train.track.node2 : train.track.node1
-        print("\(start.skNode.position) to \(end.skNode.position)")
         let distance = getTrackDistance(train.track)
         let trainSpeed = 100.0
         let time = distance / trainSpeed
@@ -128,12 +125,12 @@ class GameEngine {
         self.startTrainInScene(train, time)
     }
     
-    func getTrackDistance(_ track: Track) -> Double { CGPoint.getDistanceBetween(track.node1.position, track.node2.position) }
+    func getTrackDistance(_ track: Track) -> Double { CGPoint.getDistanceBetween(track.joint1.position, track.joint2.position) }
     
     func switchTrack(_ track: Track) {
         for t in self.trains {
             if t.track == track { return }
         }
-        track.nodeIndex = track.nodeIndex == track.multiNode.count - 1 ? 0 : track.nodeIndex + 1
+        track.jointIndex = track.jointIndex == track.multiJoint.count - 1 ? 0 : track.jointIndex + 1
     }
 }
