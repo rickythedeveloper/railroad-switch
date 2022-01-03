@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		9C13648E278190AD00B648F5 /* CGPoint+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C13648D278190AD00B648F5 /* CGPoint+.swift */; };
 		9C13648F278190AD00B648F5 /* CGPoint+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C13648D278190AD00B648F5 /* CGPoint+.swift */; };
+		9C1364912781933B00B648F5 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1364902781933B00B648F5 /* GameEngine.swift */; };
+		9C1364922781933B00B648F5 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1364902781933B00B648F5 /* GameEngine.swift */; };
 		9C78EA42278172E000ADF2AA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C78EA41278172E000ADF2AA /* AppDelegate.swift */; };
 		9C78EA44278172E000ADF2AA /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C78EA43278172E000ADF2AA /* GameViewController.swift */; };
 		9C78EA47278172E000ADF2AA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C78EA45278172E000ADF2AA /* Main.storyboard */; };
@@ -28,6 +30,7 @@
 
 /* Begin PBXFileReference section */
 		9C13648D278190AD00B648F5 /* CGPoint+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPoint+.swift"; sourceTree = "<group>"; };
+		9C1364902781933B00B648F5 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
 		9C78EA36278172DE00ADF2AA /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Actions.sks; sourceTree = "<group>"; };
 		9C78EA37278172DE00ADF2AA /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
 		9C78EA38278172DE00ADF2AA /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
@@ -80,6 +83,7 @@
 				9C78EA38278172DE00ADF2AA /* GameScene.swift */,
 				9C78EA39278172E000ADF2AA /* Assets.xcassets */,
 				9C13648D278190AD00B648F5 /* CGPoint+.swift */,
+				9C1364902781933B00B648F5 /* GameEngine.swift */,
 			);
 			path = "railroad-switch Shared";
 			sourceTree = "<group>";
@@ -221,6 +225,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C13648E278190AD00B648F5 /* CGPoint+.swift in Sources */,
+				9C1364912781933B00B648F5 /* GameEngine.swift in Sources */,
 				9C78EA5D278172E000ADF2AA /* GameScene.swift in Sources */,
 				9C78EA44278172E000ADF2AA /* GameViewController.swift in Sources */,
 				9C78EA42278172E000ADF2AA /* AppDelegate.swift in Sources */,
@@ -232,6 +237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C13648F278190AD00B648F5 /* CGPoint+.swift in Sources */,
+				9C1364922781933B00B648F5 /* GameEngine.swift in Sources */,
 				9C78EA5E278172E000ADF2AA /* GameScene.swift in Sources */,
 				9C78EA54278172E000ADF2AA /* GameViewController.swift in Sources */,
 				9C78EA52278172E000ADF2AA /* AppDelegate.swift in Sources */,

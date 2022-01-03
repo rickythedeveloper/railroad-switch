@@ -12,9 +12,8 @@ class GameScene: SKScene {
     
     fileprivate var label : SKLabelNode?
     fileprivate var spinnyNode : SKShapeNode?
-    var lines: [SKShapeNode] = []
-    var rects: [SKShapeNode] = []
-
+    
+    var gameEngine: GameEngine!
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -25,9 +24,6 @@ class GameScene: SKScene {
         
         // Set the scale mode to scale to fit the window
         scene.scaleMode = .aspectFill
-        
-        scene.addLine(pivot: CGPoint(x: 50, y: 50), end: CGPoint(x: 100, y: 100), color: UIColor.blue)
-        scene.addRect(center: CGPoint(x: 0, y: 0), size: CGSize(width: 20, height: 20), color: UIColor.red)
         return scene
     }
     
@@ -62,6 +58,22 @@ class GameScene: SKScene {
                                                                    })])))
             #endif
         }
+        
+        self.gameEngine = GameEngine(startTrainInScene: self.startTrain)
+        self.addJoint(position: CGPoint(x: -200, y: 0))
+        self.addJoint(position: CGPoint(x: 0, y: 0))
+        self.addJoint(position: CGPoint(x: 100, y: 0))
+        self.addJoint(position: CGPoint(x: 200, y: 0))
+        self.addJoint(position: CGPoint(x: 100, y: 100))
+        self.addJoint(position: CGPoint(x: 200, y: 100))
+        self.addTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]])
+        self.addTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]])
+        self.addTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]])
+        self.addTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]])
+        self.addTrain(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
+        self.gameEngine.startTrain(train: self.gameEngine.trains[0])
+        
+        self.renderAll()
     }
     
     #if os(watchOS)
@@ -86,26 +98,32 @@ class GameScene: SKScene {
         // Called before each frame is rendered
     }
     
-    func addLine(pivot: CGPoint, end: CGPoint, color: UIColor=UIColor.white) {
-        let line = SKShapeNode()
-        let path = CGMutablePath()
-        path.move(to: CGPoint.zero)
-        
-        path.addLine(to: end - pivot)
-        line.path = path
-        line.strokeColor = color
-        line.position = pivot
-        self.addChild(line)
-        self.lines.append(line)
+    func addJoint(position: CGPoint) {
+        let joint = Joint(position: position)
+        self.gameEngine.joints.append(joint)
     }
     
-    func addRect(center: CGPoint, size: CGSize, color: UIColor=UIColor.white) {
-        let rect = SKShapeNode(rectOf: size)
-        rect.position = center
-        rect.fillColor = color
-        rect.strokeColor = UIColor.clear
-        self.addChild(rect)
-        self.rects.append(rect)
+    func addTrack(singleJoint: Joint, multiJoint: [Joint]) {
+        let track = Track(singleJoint: singleJoint, multiJoint: multiJoint)
+        self.gameEngine.tracks.append(track)
+    }
+    
+    func addTrain(track: Track, joint: Joint, goalJoint: Joint) {
+        let train = Train(track: track, joint: joint, goalJoint: goalJoint)
+        self.gameEngine.trains.append(train)
+    }
+    
+    func startTrain(train: Train, duration: TimeInterval) {
+        let startJoint = train.from1To2 ? train.track.joint1 : train.track.joint2
+        let endJoint = train.from1To2 ? train.track.joint2 : train.track.joint1
+        train.skNode.position = startJoint.skNode.position
+        train.skNode.run(SKAction.move(to: endJoint.skNode.position, duration: duration))
+    }
+    
+    func renderAll() {
+        for track in self.gameEngine.tracks { self.addChild(track.skNode) }
+        for joint in self.gameEngine.joints { self.addChild(joint.skNode) }
+        for train in self.gameEngine.trains { self.addChild(train.skNode) }
     }
 }
 
@@ -121,15 +139,10 @@ extension GameScene {
         for t in touches {
             self.makeSpinny(at: t.location(in: self), color: SKColor.green)
             
-            for l in self.lines {
-                if l.frame.contains(t.location(in: self)) == true {
-                    let rotation = SKAction.rotate(byAngle: 1, duration: 1)
-                    l.run(rotation)
-                }
-            }
-            
-            for r in self.rects {
-                r.run(SKAction.move(to: CGPoint(x: 100, y: 100), duration: 1))
+            let touchedNodes = self.nodes(at: t.location(in: self))
+            for n in touchedNodes {
+                let tracks = self.gameEngine.tracks.filter { track in track.skNode == n }
+                tracks.forEach { track in self.gameEngine.switchTrack(track) }
             }
         }
     }
