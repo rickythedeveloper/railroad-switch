@@ -67,7 +67,7 @@ class GameScene: SKScene {
         self.addJoint(position: CGPoint(x: 100, y: 100))
         self.addJoint(position: CGPoint(x: 200, y: 100))
         self.addTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]])
-        self.addTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]])
+        self.addTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]], jointIndex: 1)
         self.addTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]])
         self.addTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]])
         self.addTrain(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
@@ -103,8 +103,8 @@ class GameScene: SKScene {
         self.gameEngine.joints.append(joint)
     }
     
-    func addTrack(singleJoint: Joint, multiJoint: [Joint]) {
-        let track = Track(singleJoint: singleJoint, multiJoint: multiJoint)
+    func addTrack(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) {
+        let track = Track(singleJoint: singleJoint, multiJoint: multiJoint, jointIndex: jointIndex)
         self.gameEngine.tracks.append(track)
     }
     

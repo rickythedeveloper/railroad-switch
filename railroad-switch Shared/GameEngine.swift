@@ -7,14 +7,19 @@
 
 import SpriteKit
 
+fileprivate let TRACK_WIDTH: CGFloat = 20
+fileprivate let TRAIN_WIDTH: CGFloat = 40
+fileprivate let ANIMATION_DURATION: TimeInterval = 0.3
+
 class Joint: Equatable {
     let skNode: SKShapeNode
     let position: CGPoint
     
     init(position: CGPoint) {
-        let node = SKShapeNode(circleOfRadius: 20)
+        let node = SKShapeNode(circleOfRadius: TRACK_WIDTH/2)
         node.position = position
-        node.fillColor = UIColor.red
+        node.strokeColor = .clear
+        node.fillColor = .white
         self.skNode = node
         self.position = position
     }
@@ -24,17 +29,17 @@ class Joint: Equatable {
 
 class Track: Equatable {
     let skNode: SKShapeNode
+    private var currentLength: Double
+    var currentAngle: Double
     let singleJoint: Joint
     let multiJoint: [Joint]
     var jointIndex: Int {
         didSet {
-            let path = CGMutablePath()
-            path.move(to: joint1.skNode.position)
-            path.addLine(to: joint2.skNode.position)
-            skNode.path = path
-            for child in skNode.children {
-                (child as! SKShapeNode).path = path
-            }
+            let newLength = CGPoint.getDistanceBetween(self.joint1.skNode.position, self.joint2.skNode.position)
+            let newAngle = (self.joint2.skNode.position - self.joint1.skNode.position).angle
+            self.skNode.run(SKAction.scaleX(by: newLength / currentLength, y: 1, duration: ANIMATION_DURATION))
+            currentLength = newLength
+            self.skNode.run(SKAction.rotate(toAngle: newAngle, duration: ANIMATION_DURATION))
         }
     }
     
@@ -46,22 +51,15 @@ class Track: Equatable {
     }
     
     init(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) {
-        let bigLine = SKShapeNode()
-        let line = SKShapeNode()
-        let path = CGMutablePath()
-        path.move(to: singleJoint.skNode.position)
-        path.addLine(to: multiJoint[jointIndex].skNode.position)
-        bigLine.strokeColor = UIColor.clear
-        bigLine.lineWidth = 50
-        line.strokeColor = multiJoint.count == 1 ? UIColor.yellow : UIColor.green
-        line.lineWidth = 10
-        line.path = path
-        bigLine.path = path
-        bigLine.addChild(line)
-        self.skNode = bigLine
         self.singleJoint = singleJoint
         self.multiJoint = multiJoint
         self.jointIndex = jointIndex
+        self.currentLength = CGPoint.getDistanceBetween(singleJoint.skNode.position, multiJoint[jointIndex].skNode.position)
+        self.currentAngle = (multiJoint[jointIndex].skNode.position - singleJoint.skNode.position).angle
+        self.skNode = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: self.currentLength + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
+        self.skNode.strokeColor = .white
+        self.skNode.position = singleJoint.skNode.position
+        self.skNode.run(SKAction.rotate(toAngle: self.currentAngle, duration: 0))
     }
     
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
@@ -74,9 +72,10 @@ class Train {
     var goalJoint: Joint
     
     init(track: Track, joint: Joint, goalJoint: Joint) {
-        let rect = SKShapeNode(rectOf: CGSize(width: 30, height: 20))
+        let rect = SKShapeNode(rectOf: CGSize(width: TRAIN_WIDTH * 1.5, height: TRAIN_WIDTH))
         rect.position = joint.skNode.position
-        rect.fillColor = UIColor.blue
+        rect.strokeColor = .clear
+        rect.fillColor = .blue
         self.skNode = rect
         self.track = track
         self.from1To2 = track.joint1 == joint
