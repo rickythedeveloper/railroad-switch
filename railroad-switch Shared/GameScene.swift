@@ -14,6 +14,7 @@ class GameScene: SKScene {
     fileprivate var spinnyNode : SKShapeNode?
     
     var gameEngine: GameEngine!
+    private let TRAIN_ANIMATION_KEY = "train-animation"
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -59,7 +60,7 @@ class GameScene: SKScene {
             #endif
         }
         
-        self.gameEngine = GameEngine(startTrainInScene: self.startTrain)
+        self.gameEngine = GameEngine(moveTrainInScene: self.moveTrain, pauseTrainInScene: self.pauseTrain)
         self.addJoint(position: CGPoint(x: -200, y: 0))
         self.addJoint(position: CGPoint(x: 0, y: 0))
         self.addJoint(position: CGPoint(x: 100, y: 0))
@@ -113,11 +114,12 @@ class GameScene: SKScene {
         self.gameEngine.trains.append(train)
     }
     
-    func startTrain(train: Train, duration: TimeInterval) {
-        let startJoint = train.from1To2 ? train.track.joint1 : train.track.joint2
-        let endJoint = train.from1To2 ? train.track.joint2 : train.track.joint1
-        train.skNode.position = startJoint.skNode.position
-        train.skNode.run(SKAction.move(to: endJoint.skNode.position, duration: duration))
+    func moveTrain(_ train: Train, to joint: Joint, duration: TimeInterval) {
+        train.skNode.run(SKAction.move(to: joint.skNode.position, duration: duration), withKey: TRAIN_ANIMATION_KEY)
+    }
+    
+    func pauseTrain(_ train: Train) {
+        train.skNode.removeAction(forKey: TRAIN_ANIMATION_KEY)
     }
     
     func renderAll() {
@@ -143,6 +145,9 @@ extension GameScene {
             for n in touchedNodes {
                 let tracks = self.gameEngine.tracks.filter { track in track.skNode == n }
                 tracks.forEach { track in self.gameEngine.switchTrack(track) }
+                
+                let trains = self.gameEngine.trains.filter { train in train.skNode == n }
+                for train in trains { self.gameEngine.pauseResumeTrain(train) }
             }
         }
     }

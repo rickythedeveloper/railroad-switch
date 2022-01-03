@@ -65,13 +65,15 @@ class Track: Equatable {
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
 }
 
-class Train {
+class Train: Hashable {
+    let id: UUID
     let skNode: SKShapeNode
     var track: Track
     var from1To2: Bool
     var goalJoint: Joint
     
     init(track: Track, joint: Joint, goalJoint: Joint) {
+        self.id = UUID()
         let rect = SKShapeNode(rectOf: CGSize(width: TRAIN_WIDTH * 1.5, height: TRAIN_WIDTH))
         rect.position = joint.skNode.position
         rect.strokeColor = .clear
@@ -81,16 +83,30 @@ class Train {
         self.from1To2 = track.joint1 == joint
         self.goalJoint = goalJoint
     }
+    
+    static func ==(lhs: Train, rhs: Train) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+    }
+}
+
+enum TimerInfo {
+    case timer(Timer)
+    case duration(TimeInterval)
 }
 
 class GameEngine {
     var joints: [Joint] = []
     var tracks: [Track] = []
     var trains: [Train] = []
-    let startTrainInScene: (_ train: Train,_ duration: TimeInterval) -> Void
+    var trainTimers: [Train: TimerInfo] = [:]
+    let moveTrainInScene: (_ train: Train,_ joint: Joint,_ duration: TimeInterval) -> Void
+    let pauseTrainInScene: (_ train: Train) -> Void
     
-    init(startTrainInScene: @escaping (_ train: Train,_ duration: TimeInterval) -> Void) {
-        self.startTrainInScene = startTrainInScene
+    init(moveTrainInScene: @escaping (_ train: Train,_ joint: Joint,_ duration: TimeInterval) -> Void, pauseTrainInScene: @escaping (_ train: Train) -> Void) {
+        self.moveTrainInScene = moveTrainInScene
+        self.pauseTrainInScene = pauseTrainInScene
     }
     
     func trainDidArriveAtNode(train: Train) {
@@ -117,11 +133,10 @@ class GameEngine {
         let distance = getTrackDistance(train.track)
         let trainSpeed = 100.0
         let time = distance / trainSpeed
-        Timer.scheduledTimer(withTimeInterval: time, repeats: false) { timer in
+        trainTimers[train] = TimerInfo.timer(Timer.scheduledTimer(withTimeInterval: time, repeats: false) { timer in
             self.trainDidArriveAtNode(train: train)
-        }
-        
-        self.startTrainInScene(train, time)
+        })
+        self.moveTrainInScene(train, train.from1To2 ? train.track.joint2 : train.track.joint1, time)
     }
     
     func getTrackDistance(_ track: Track) -> Double { CGPoint.getDistanceBetween(track.joint1.position, track.joint2.position) }
@@ -131,5 +146,22 @@ class GameEngine {
             if t.track == track { return }
         }
         track.jointIndex = track.jointIndex == track.multiJoint.count - 1 ? 0 : track.jointIndex + 1
+    }
+    
+    func pauseResumeTrain(_ train: Train) {
+        if let timerInfo = trainTimers[train] {
+            switch timerInfo {
+            case .timer(let timer):
+                let remaining = timer.fireDate - Date()
+                trainTimers[train] = .duration(remaining)
+                timer.invalidate()
+                self.pauseTrainInScene(train)
+            case .duration(let duration):
+                trainTimers[train] = .timer(Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { timer in
+                    self.trainDidArriveAtNode(train: train)
+                })
+                self.moveTrainInScene(train, train.from1To2 ? train.track.joint2 : train.track.joint1, duration)
+            }
+        }
     }
 }
