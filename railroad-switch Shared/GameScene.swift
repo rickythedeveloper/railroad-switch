@@ -68,7 +68,7 @@ class GameScene: SKScene {
         self.addTrack(singleNode: self.gameEngine.nodes[0], multiNode: [self.gameEngine.nodes[1]])
         self.addTrack(singleNode: self.gameEngine.nodes[1], multiNode: [self.gameEngine.nodes[2], self.gameEngine.nodes[3]])
         self.addTrack(singleNode: self.gameEngine.nodes[3], multiNode: [self.gameEngine.nodes[4]])
-        self.addTrain(track: self.gameEngine.tracks[0], node: self.gameEngine.nodes[0])
+        self.addTrain(track: self.gameEngine.tracks[0], node: self.gameEngine.nodes[0], goalNode: self.gameEngine.nodes[2])
         self.gameEngine.startTrain(train: self.gameEngine.trains[0])
         
         self.renderAll()
@@ -106,8 +106,8 @@ class GameScene: SKScene {
         self.gameEngine.tracks.append(track)
     }
     
-    func addTrain(track: Track, node: RailwayNode) {
-        let train = Train(track: track, node: node)
+    func addTrain(track: Track, node: RailwayNode, goalNode: RailwayNode) {
+        let train = Train(track: track, node: node, goalNode: goalNode)
         self.gameEngine.trains.append(train)
     }
     

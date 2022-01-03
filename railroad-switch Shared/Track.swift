@@ -71,14 +71,16 @@ class Train {
     let skNode: SKShapeNode
     var track: Track
     var from1To2: Bool
+    var goalNode: RailwayNode
     
-    init(track: Track, node: RailwayNode) {
+    init(track: Track, node: RailwayNode, goalNode: RailwayNode) {
         let rect = SKShapeNode(rectOf: CGSize(width: 30, height: 20))
         rect.position = node.skNode.position
         rect.fillColor = UIColor.blue
         self.skNode = rect
         self.track = track
         self.from1To2 = track.node1 == node
+        self.goalNode = goalNode
     }
 }
 
@@ -95,6 +97,10 @@ class GameEngine {
     func trainDidArriveAtNode(train: Train) {
         let currentTrack = train.track
         let arrivingNode = train.from1To2 ? currentTrack.node2 : currentTrack.node1
+        if arrivingNode == train.goalNode {
+            print("Goal reached!")
+            return
+        }
         for newTrack in self.tracks {
             guard newTrack != currentTrack else { continue }
             if newTrack.node1 == arrivingNode || newTrack.node2 == arrivingNode {
@@ -105,8 +111,7 @@ class GameEngine {
             }
         }
         
-//        If no tracks found then do something?
-        print("No new track found")
+        print("Failed!")
     }
     
     func startTrain(train: Train) {
