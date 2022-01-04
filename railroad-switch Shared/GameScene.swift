@@ -21,6 +21,12 @@ class GameScene: SKScene {
             self.scoreLabel.text = "Score: \(self.score)"
         }
     }
+    var trackMainNodes: [Track:SKShapeNode] = [:]
+    var initialTrackSceneLength: [Track:Double] = [:]
+    var trainNode: [Train:SKShapeNode] = [:]
+    var jointNode: [Joint:SKShapeNode] = [:]
+    var scale: Double = 1
+    var center: CGPoint = CGPoint.zero
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -36,20 +42,27 @@ class GameScene: SKScene {
     
     func setUpScene() {
         self.gameEngine = GameEngine(moveTrainInScene: self.moveTrain, pauseTrainInScene: self.pauseTrain, trainDidReachGoal: self.trainDidReachGoal)
-        self.addJoint(position: CGPoint(x: -200, y: 0))
-        self.addJoint(position: CGPoint(x: 0, y: 0))
-        self.addJoint(position: CGPoint(x: 100, y: 0))
-        self.addJoint(position: CGPoint(x: 200, y: 0))
-        self.addJoint(position: CGPoint(x: 100, y: 100))
-        self.addJoint(position: CGPoint(x: 200, y: 100))
-        self.addTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]])
-        self.addTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]], jointIndex: 1)
-        self.addTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]])
-        self.addTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]])
-        self.addTrain(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
-        self.gameEngine.startTrain(train: self.gameEngine.trains[0])
+        self.gameEngine.joints.append(contentsOf: [
+            Joint(position: CGPoint(x: -200, y: 0)),
+            Joint(position: CGPoint(x: 0, y: 0)),
+            Joint(position: CGPoint(x: 100, y: 0)),
+            Joint(position: CGPoint(x: 200, y: 0)),
+            Joint(position: CGPoint(x: 100, y: 100)),
+            Joint(position: CGPoint(x: 200, y: 100)),
+        ])
+        self.gameEngine.tracks.append(contentsOf: [
+            self.getTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]]),
+            self.getTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]], jointIndex: 1),
+            self.getTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]]),
+            self.getTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]]),
+        ])
+        self.gameEngine.trains.append(contentsOf: [
+            Train(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
+        ])
         
         self.renderAll()
+        self.gameEngine.startTrain(train: self.gameEngine.trains[0])
+        
         
         self.scoreLabel = SKLabelNode(fontNamed: "ScoreLabel")
         self.scoreLabel.fontSize = 15
@@ -74,44 +87,125 @@ class GameScene: SKScene {
         // Called before each frame is rendered
     }
     
-    func addJoint(position: CGPoint) {
-        let joint = Joint(position: position)
-        self.gameEngine.joints.append(joint)
-    }
+    func adjustPosition(_ position: CGPoint) -> CGPoint { (position - self.center) * self.scale }
     
-    func addTrack(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) {
-        let track = Track(singleJoint: singleJoint, multiJoint: multiJoint, jointIndex: jointIndex)
-        self.gameEngine.tracks.append(track)
-    }
-    
-    func addTrain(track: Track, joint: Joint, goalJoint: Joint) {
-        let train = Train(track: track, joint: joint, goalJoint: goalJoint)
-        self.gameEngine.trains.append(train)
+    func getTrack(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) -> Track {
+        return Track(singleJoint: singleJoint, multiJoint: multiJoint, jointIndex: jointIndex, jointIndexDidChange: { t in
+            let trackSceneLength = self.getTrackSceneLength(track: t)
+            let trackAngle = (t.joint2.position - t.joint1.position).angle
+            if let mainNode = self.trackMainNodes[t], let initialTrackSceneLength2 = self.initialTrackSceneLength[t] {
+                print(trackSceneLength, initialTrackSceneLength2, t.joint2.position, t.joint1.position)
+                mainNode.run(SKAction.scaleX(to: trackSceneLength / initialTrackSceneLength2, duration: ANIMATION_DURATION))
+                mainNode.run(SKAction.rotate(toAngle: trackAngle, duration: ANIMATION_DURATION))
+            }
+        })
     }
     
     func moveTrain(_ train: Train, to joint: Joint, duration: TimeInterval) {
-        train.skNode.run(SKAction.move(to: joint.skNode.position, duration: duration), withKey: TRAIN_ANIMATION_KEY)
+        if let node = self.trainNode[train] {
+            node.run(SKAction.move(to: adjustPosition(joint.position), duration: duration), withKey: TRAIN_ANIMATION_KEY)
+        }
     }
     
     func pauseTrain(_ train: Train) {
-        train.skNode.removeAction(forKey: TRAIN_ANIMATION_KEY)
+        if let node = self.trainNode[train] {
+            node.removeAction(forKey: TRAIN_ANIMATION_KEY)
+        }
     }
     
     func trainDidReachGoal() { self.score += 1 }
     
     func renderAll() {
-        for track in self.gameEngine.tracks { self.addChild(track.skNode) }
-        for joint in self.gameEngine.joints { self.addChild(joint.skNode) }
-        for train in self.gameEngine.trains { self.addChild(train.skNode) }
+        let (minX, maxX, minY, maxY) = CGPoint.getMaxMin(points: self.gameEngine.joints.map({ j in j.position }))
+        let minWidth = (maxX - minX) * 1.2
+        let minHeight = (maxY - minY) * 1.2
+        self.scale = min(self.frame.width / minWidth, self.frame.height / minHeight)
+        self.center = CGPoint(x: (minX + maxX) / 2, y: (minY + maxY) / 2)
+        print(self.scale, self.center)
+        for track in self.gameEngine.tracks { self.addChild(self.createTrackNode(track: track)) }
+        for joint in self.gameEngine.joints { self.addChild(self.createJointNode(joint: joint)) }
+        for train in self.gameEngine.trains { self.addChild(self.createTrainNode(train: train)) }
+    }
+    
+    func getTrackSceneLength(track: Track) -> Double { self.getJointsSceneLength(from: track.joint1, to: track.joint2) }
+    
+    func getJointsSceneLength(from joint1: Joint, to joint2: Joint) -> Double { (self.adjustPosition(joint1.position) - self.adjustPosition(joint2.position)).magnitude }
+
+    func createJointNode(joint: Joint) -> SKShapeNode {
+        let node = SKShapeNode(circleOfRadius: TRACK_WIDTH/2)
+        node.position = self.adjustPosition(joint.position)
+        node.strokeColor = .clear
+        node.fillColor = .white
+        return node
+    }
+    
+    func getTrackPath(distance: Double, lineWidth: CGFloat) -> CGPath {
+        let path = CGMutablePath()
+        let topY = TRACK_WIDTH/2 - lineWidth/2
+        let bottomY = -topY
+        path.move(to: CGPoint(x: 0, y: topY))
+        path.addLine(to: CGPoint(x: distance, y: topY))
+        path.move(to: CGPoint(x: 0, y: bottomY))
+        path.addLine(to: CGPoint(x: distance, y: bottomY))
+        return path
+    }
+    
+    func createTrackNode(track: Track) -> SKNode {
+        let mainAngle = (track.joint2.position - track.joint1.position).angle
+        let mainLength = getTrackSceneLength(track: track)
+        let mainPath = getTrackPath(distance: mainLength, lineWidth: TRACK_LINE_WIDTH)
+        initialTrackSceneLength[track] = mainLength
+        let mainNode = SKShapeNode()
+        mainNode.path = mainPath
+        self.trackMainNodes[track] = mainNode
+        mainNode.strokeColor = .red
+        mainNode.run(SKAction.rotate(toAngle: mainAngle, duration: 0))
+        
+        
+        let node = SKNode()
+        node.position = self.adjustPosition(track.singleJoint.position)
+        
+        if track.multiJoint.count > 1 {
+            for j in track.multiJoint {
+                let dummySceneLength = getJointsSceneLength(from: track.singleJoint, to: j)
+                let dummyAngle = (j.position - track.singleJoint.position).angle
+                let dummyPath = getTrackPath(distance: dummySceneLength, lineWidth: TRACK_LINE_WIDTH)
+                let dummyNode = SKShapeNode()
+                dummyNode.path = dummyPath
+                dummyNode.strokeColor = .darkGray
+                dummyNode.position = CGPoint.zero
+                dummyNode.run(SKAction.rotate(toAngle: dummyAngle, duration: 0))
+                node.addChild(dummyNode)
+            }
+        }
+        
+        node.addChild(mainNode)
+        return node
+    }
+    
+    func createTrainNode(train: Train) -> SKShapeNode {
+        let node = SKShapeNode(rectOf: CGSize(width: TRAIN_WIDTH * 1.5, height: TRAIN_WIDTH))
+        let joint = train.from1To2 ? train.track.joint1 : train.track.joint2
+        node.position = self.adjustPosition(joint.position)
+        node.strokeColor = .clear
+        node.fillColor = .blue
+        return node
     }
     
     func respondToTouch(location: CGPoint) {
         let touchedNodes = self.nodes(at: location)
         for n in touchedNodes {
-            let tracks = self.gameEngine.tracks.filter { track in track.skNode == n }
+            var tracks: [Track] = []
+            for (track, mainNode) in trackMainNodes {
+                if mainNode == n { tracks.append(track) }
+            }
+            
             tracks.forEach { track in self.gameEngine.switchTrack(track) }
             
-            let trains = self.gameEngine.trains.filter { train in train.skNode == n }
+            var trains: [Train] = []
+            for (train, nodee) in trainNode {
+                if nodee == n { trains.append(train)}
+            }
             for train in trains { self.gameEngine.pauseResumeTrain(train) }
         }
     }
