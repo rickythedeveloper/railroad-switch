@@ -7,22 +7,11 @@
 
 import SpriteKit
 
-let TRACK_WIDTH: CGFloat = 20
-let TRACK_LINE_WIDTH: CGFloat = 2
-let TRAIN_WIDTH: CGFloat = 40
-let ANIMATION_DURATION: TimeInterval = 0.3
-
 class Joint: Hashable {
-//    let skNode: SKShapeNode
     let id: UUID
     let position: CGPoint
     
     init(position: CGPoint) {
-//        let node = SKShapeNode(circleOfRadius: TRACK_WIDTH/2)
-//        node.position = position
-//        node.strokeColor = .clear
-//        node.fillColor = .white
-//        self.skNode = node
         self.id = UUID()
         self.position = position
     }
@@ -40,11 +29,6 @@ class Track: Hashable {
     let multiJoint: [Joint]
     var jointIndex: Int {
         didSet {
-//            let newLength = CGPoint.getDistanceBetween(self.joint1.skNode.position, self.joint2.skNode.position)
-//            let newAngle = (self.joint2.skNode.position - self.joint1.skNode.position).angle
-//            self.mainNode.run(SKAction.scaleX(by: newLength / currentLength, y: 1, duration: ANIMATION_DURATION))
-//            currentLength = newLength
-//            self.mainNode.run(SKAction.rotate(toAngle: newAngle, duration: ANIMATION_DURATION))
             self.jointIndexDidChange(self)
         }
     }
