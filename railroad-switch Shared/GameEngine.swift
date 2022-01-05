@@ -7,6 +7,8 @@
 
 import SpriteKit
 
+fileprivate let TRAIN_SPEED = 50.0
+
 class Joint: Hashable {
     let id: UUID
     let position: CGPoint
@@ -125,8 +127,7 @@ class GameEngine {
     
     func startTrain(train: Train) {
         let distance = getTrackDistance(train.track)
-        let trainSpeed = 100.0
-        let time = distance / trainSpeed
+        let time = distance / TRAIN_SPEED
         trainTimers[train] = TimerInfo.timer(Timer.scheduledTimer(withTimeInterval: time, repeats: false) { timer in
             self.trainDidArriveAtNode(train: train)
         })
