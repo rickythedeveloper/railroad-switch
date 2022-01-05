@@ -13,6 +13,7 @@ class GameScene: SKScene {
     private let TRACK_LINE_WIDTH: CGFloat = 2
     private let TRAIN_WIDTH: CGFloat = 40
     private let ANIMATION_DURATION: TimeInterval = 0.3
+    private let TRAIN_ROTATE_DURATION: TimeInterval = 0.1
     
     private var gameEngine: GameEngine!
     private let TRAIN_ANIMATION_KEY = "train-animation"
@@ -103,6 +104,7 @@ class GameScene: SKScene {
     private func moveTrain(_ train: Train, to joint: Joint, duration: TimeInterval) {
         if let node = self.trainNode[train] {
             node.run(SKAction.move(to: adjustPosition(joint.position), duration: duration), withKey: TRAIN_ANIMATION_KEY)
+            node.run(SKAction.rotate(toAngle: train.track.angle, duration: TRAIN_ROTATE_DURATION))
         } else {fatalError()}
     }
     
@@ -153,7 +155,6 @@ class GameScene: SKScene {
     }
     
     private func createTrackNode(track: Track) -> SKNode {
-        let mainAngle = (track.joint2.position - track.joint1.position).angle
         let mainLength = getTrackSceneLength(track: track)
         let mainPath = getTrackPath(distance: mainLength, lineWidth: TRACK_LINE_WIDTH)
         initialTrackSceneLength[track] = mainLength
@@ -161,8 +162,7 @@ class GameScene: SKScene {
         mainNode.path = mainPath
         self.trackMainNodes[track] = mainNode
         mainNode.strokeColor = .red
-        mainNode.run(SKAction.rotate(toAngle: mainAngle, duration: 0))
-        
+        mainNode.run(SKAction.rotate(toAngle: track.angle, duration: 0))
         
         let node = SKNode()
         node.position = self.adjustPosition(track.singleJoint.position)

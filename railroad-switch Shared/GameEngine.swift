@@ -40,6 +40,9 @@ class Track: Hashable {
     var joint2: Joint {
         get { multiJoint[jointIndex] }
     }
+    var angle: Double {
+        get { (self.joint2.position - self.joint1.position).angle }
+    }
     
     init(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0, jointIndexDidChange: @escaping (_ track: Track) -> Void) {
         self.id = UUID()
