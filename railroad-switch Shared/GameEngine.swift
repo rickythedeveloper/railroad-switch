@@ -7,42 +7,32 @@
 
 import SpriteKit
 
-fileprivate let TRACK_WIDTH: CGFloat = 20
-fileprivate let TRAIN_WIDTH: CGFloat = 40
-fileprivate let ANIMATION_DURATION: TimeInterval = 0.3
-
-class Joint: Equatable {
-    let skNode: SKShapeNode
+class Joint: Hashable {
+    let id: UUID
     let position: CGPoint
     
     init(position: CGPoint) {
-        let node = SKShapeNode(circleOfRadius: TRACK_WIDTH/2)
-        node.position = position
-        node.strokeColor = .clear
-        node.fillColor = .white
-        self.skNode = node
+        self.id = UUID()
         self.position = position
     }
     
     static func ==(lhs: Joint, rhs: Joint) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+    }
 }
 
-class Track: Equatable {
-    let skNode: SKNode // parent for the main and dummy nodes
-    let mainNode: SKShapeNode
-    private var currentLength: Double
-    var currentAngle: Double
+class Track: Hashable {
+    let id: UUID
     let singleJoint: Joint
     let multiJoint: [Joint]
     var jointIndex: Int {
         didSet {
-            let newLength = CGPoint.getDistanceBetween(self.joint1.skNode.position, self.joint2.skNode.position)
-            let newAngle = (self.joint2.skNode.position - self.joint1.skNode.position).angle
-            self.mainNode.run(SKAction.scaleX(by: newLength / currentLength, y: 1, duration: ANIMATION_DURATION))
-            currentLength = newLength
-            self.mainNode.run(SKAction.rotate(toAngle: newAngle, duration: ANIMATION_DURATION))
+            self.jointIndexDidChange(self)
         }
     }
+    let jointIndexDidChange: (_ track: Track) -> Void
     
     var joint1: Joint {
         get { singleJoint }
@@ -51,53 +41,29 @@ class Track: Equatable {
         get { multiJoint[jointIndex] }
     }
     
-    init(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0) {
+    init(singleJoint: Joint, multiJoint: [Joint], jointIndex: Int = 0, jointIndexDidChange: @escaping (_ track: Track) -> Void) {
+        self.id = UUID()
         self.singleJoint = singleJoint
         self.multiJoint = multiJoint
         self.jointIndex = jointIndex
-        self.currentLength = CGPoint.getDistanceBetween(singleJoint.skNode.position, multiJoint[jointIndex].skNode.position)
-        self.currentAngle = (multiJoint[jointIndex].skNode.position - singleJoint.skNode.position).angle
-        
-        self.skNode = SKNode()
-        self.skNode.position = singleJoint.skNode.position
-        
-        if multiJoint.count > 1 {
-            for j in multiJoint {
-                let length = CGPoint.getDistanceBetween(singleJoint.skNode.position, j.skNode.position)
-                let angle = (j.skNode.position - singleJoint.skNode.position).angle
-                let dummy = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: length + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
-                dummy.strokeColor = .darkGray
-                dummy.position = CGPoint.zero
-                dummy.run(SKAction.rotate(toAngle: angle, duration: 0))
-                self.skNode.addChild(dummy)
-            }
-        }
-        
-        let main = SKShapeNode(rect: CGRect(x: -TRACK_WIDTH/2, y: -TRACK_WIDTH/2, width: self.currentLength + TRACK_WIDTH, height: TRACK_WIDTH), cornerRadius: TRACK_WIDTH/2)
-        main.strokeColor = .white
-        main.position = CGPoint.zero
-        self.mainNode = main
-        self.mainNode.run(SKAction.rotate(toAngle: self.currentAngle, duration: 0))
-        self.skNode.addChild(main)
+        self.jointIndexDidChange = jointIndexDidChange
     }
     
     static func ==(lhs: Track, rhs: Track) -> Bool { ObjectIdentifier(lhs) == ObjectIdentifier(rhs) }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+    }
 }
 
 class Train: Hashable {
     let id: UUID
-    let skNode: SKShapeNode
     var track: Track
     var from1To2: Bool
     var goalJoint: Joint
     
     init(track: Track, joint: Joint, goalJoint: Joint) {
         self.id = UUID()
-        let rect = SKShapeNode(rectOf: CGSize(width: TRAIN_WIDTH * 1.5, height: TRAIN_WIDTH))
-        rect.position = joint.skNode.position
-        rect.strokeColor = .clear
-        rect.fillColor = .blue
-        self.skNode = rect
         self.track = track
         self.from1To2 = track.joint1 == joint
         self.goalJoint = goalJoint
