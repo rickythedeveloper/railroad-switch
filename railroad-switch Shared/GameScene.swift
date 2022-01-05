@@ -41,29 +41,33 @@ class GameScene: SKScene {
         return scene
     }
     
-    func setUpScene() {
+    func setUpScene(stage: Stage) {
         self.gameEngine = GameEngine(moveTrainInScene: self.moveTrain, pauseTrainInScene: self.pauseTrain, trainDidReachGoal: self.trainDidReachGoal)
-        self.gameEngine.joints.append(contentsOf: [
-            Joint(position: CGPoint(x: -200, y: 0)),
-            Joint(position: CGPoint(x: 0, y: 0)),
-            Joint(position: CGPoint(x: 100, y: 0)),
-            Joint(position: CGPoint(x: 200, y: 0)),
-            Joint(position: CGPoint(x: 100, y: 100)),
-            Joint(position: CGPoint(x: 200, y: 100)),
-        ])
-        self.gameEngine.tracks.append(contentsOf: [
-            self.getTrack(singleJoint: self.gameEngine.joints[0], multiJoint: [self.gameEngine.joints[1]]),
-            self.getTrack(singleJoint: self.gameEngine.joints[1], multiJoint: [self.gameEngine.joints[2], self.gameEngine.joints[4]], jointIndex: 1),
-            self.getTrack(singleJoint: self.gameEngine.joints[2], multiJoint: [self.gameEngine.joints[3]]),
-            self.getTrack(singleJoint: self.gameEngine.joints[4], multiJoint: [self.gameEngine.joints[5]]),
-        ])
-        self.gameEngine.trains.append(contentsOf: [
-            Train(track: self.gameEngine.tracks[0], joint: self.gameEngine.joints[0], goalJoint: self.gameEngine.joints[3])
-        ])
         
-        self.renderAll()
-        self.gameEngine.startTrain(train: self.gameEngine.trains[0])
-        
+        self.gameEngine.joints.append(contentsOf: stage.joints.map({ jointInfo in Joint(position: jointInfo.position) }))
+        self.gameEngine.tracks.append(contentsOf: stage.tracks.map({ trackInfo in
+            self.getTrack(
+                singleJoint: self.gameEngine.joints[trackInfo.singleJoint],
+                multiJoint: trackInfo.multiJoint.map({ index in self.gameEngine.joints[index] }),
+              jointIndex: trackInfo.jointIndex)
+        }))
+        self.renderMap()
+        self.gameEngine.trains.append(contentsOf: stage.trainStartTime.map({ trainInfo in
+            Train(track: gameEngine.tracks[trainInfo.trackIndex], joint: gameEngine.joints[trainInfo.jointIndex], goalJoint: gameEngine.joints[trainInfo.goalJointIndex])
+        }))
+        stage.trainStartTime.enumerated().forEach { (index, ti) in
+            Timer.scheduledTimer(withTimeInterval: ti.startTime, repeats: false) { _ in
+                let train = self.gameEngine.trains[index]
+                let trainNode = self.createTrainNode(train: train)
+                self.trainNode[train] = trainNode
+                self.addChild(trainNode)
+            }
+            
+            Timer.scheduledTimer(withTimeInterval: ti.startTime + 1.0, repeats: false) { _ in
+                let train = self.gameEngine.trains[index]
+                self.gameEngine.startTrain(train: train)
+            }
+        }
         
         self.scoreLabel = SKLabelNode()
         self.scoreLabel.fontSize = 15
@@ -80,7 +84,7 @@ class GameScene: SKScene {
     }
     #else
     override func didMove(to view: SKView) {
-        self.setUpScene()
+        self.setUpScene(stage: STAGES[0])
     }
     #endif
     
@@ -116,7 +120,7 @@ class GameScene: SKScene {
     
     private func trainDidReachGoal() { self.score += 1 }
     
-    private func renderAll() {
+    private func renderMap() {
         let (minX, maxX, minY, maxY) = CGPoint.getMaxMin(points: self.gameEngine.joints.map({ j in j.position }))
         let minWidth = (maxX - minX) * 1.2
         let minHeight = (maxY - minY) * 1.2
@@ -124,11 +128,6 @@ class GameScene: SKScene {
         self.center = CGPoint(x: (minX + maxX) / 2, y: (minY + maxY) / 2)
         for track in self.gameEngine.tracks { self.addChild(self.createTrackNode(track: track)) }
         for joint in self.gameEngine.joints { self.addChild(self.createJointNode(joint: joint)) }
-        for train in self.gameEngine.trains {
-            let trainNode = self.createTrainNode(train: train)
-            self.trainNode[train] = trainNode
-            self.addChild(trainNode)
-        }
     }
     
     private func getTrackSceneLength(track: Track) -> Double { self.getJointsSceneLength(from: track.joint1, to: track.joint2) }

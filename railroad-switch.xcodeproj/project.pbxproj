@@ -28,6 +28,8 @@
 		9C78EA5E278172E000ADF2AA /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C78EA38278172DE00ADF2AA /* GameScene.swift */; };
 		9C78EA5F278172E000ADF2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C78EA39278172E000ADF2AA /* Assets.xcassets */; };
 		9C78EA60278172E000ADF2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C78EA39278172E000ADF2AA /* Assets.xcassets */; };
+		9CC270E0278593C800E6EC40 /* Stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC270DF278593C800E6EC40 /* Stage.swift */; };
+		9CC270E1278593C800E6EC40 /* Stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC270DF278593C800E6EC40 /* Stage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,7 @@
 		9C78EA53278172E000ADF2AA /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		9C78EA56278172E000ADF2AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9C78EA58278172E000ADF2AA /* railroad_switch_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = railroad_switch_macOS.entitlements; sourceTree = "<group>"; };
+		9CC270DF278593C800E6EC40 /* Stage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +91,7 @@
 				9C13648D278190AD00B648F5 /* CGPoint+.swift */,
 				9C1364902781933B00B648F5 /* GameEngine.swift */,
 				9C62101C2782ABF500478A0A /* Date+.swift */,
+				9CC270DF278593C800E6EC40 /* Stage.swift */,
 			);
 			path = "railroad-switch Shared";
 			sourceTree = "<group>";
@@ -231,6 +235,7 @@
 				9C13648E278190AD00B648F5 /* CGPoint+.swift in Sources */,
 				9C1364912781933B00B648F5 /* GameEngine.swift in Sources */,
 				9C78EA5D278172E000ADF2AA /* GameScene.swift in Sources */,
+				9CC270E0278593C800E6EC40 /* Stage.swift in Sources */,
 				9C62101D2782ABF500478A0A /* Date+.swift in Sources */,
 				9C78EA44278172E000ADF2AA /* GameViewController.swift in Sources */,
 				9C78EA42278172E000ADF2AA /* AppDelegate.swift in Sources */,
@@ -244,6 +249,7 @@
 				9C13648F278190AD00B648F5 /* CGPoint+.swift in Sources */,
 				9C1364922781933B00B648F5 /* GameEngine.swift in Sources */,
 				9C78EA5E278172E000ADF2AA /* GameScene.swift in Sources */,
+				9CC270E1278593C800E6EC40 /* Stage.swift in Sources */,
 				9C62101E2782ABF500478A0A /* Date+.swift in Sources */,
 				9C78EA54278172E000ADF2AA /* GameViewController.swift in Sources */,
 				9C78EA52278172E000ADF2AA /* AppDelegate.swift in Sources */,
