@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C11DD4527886EB4008645DF /* SelectStageVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C11DD4427886EB4008645DF /* SelectStageVC.swift */; };
 		9C13648E278190AD00B648F5 /* CGPoint+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C13648D278190AD00B648F5 /* CGPoint+.swift */; };
 		9C13648F278190AD00B648F5 /* CGPoint+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C13648D278190AD00B648F5 /* CGPoint+.swift */; };
 		9C1364912781933B00B648F5 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1364902781933B00B648F5 /* GameEngine.swift */; };
@@ -33,6 +34,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9C11DD4427886EB4008645DF /* SelectStageVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectStageVC.swift; sourceTree = "<group>"; };
 		9C13648D278190AD00B648F5 /* CGPoint+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPoint+.swift"; sourceTree = "<group>"; };
 		9C1364902781933B00B648F5 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
 		9C62101C2782ABF500478A0A /* Date+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+.swift"; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				9C78EA43278172E000ADF2AA /* GameViewController.swift */,
 				9C78EA45278172E000ADF2AA /* Main.storyboard */,
 				9C78EA48278172E000ADF2AA /* LaunchScreen.storyboard */,
+				9C11DD4427886EB4008645DF /* SelectStageVC.swift */,
 			);
 			path = "railroad-switch iOS";
 			sourceTree = "<group>";
@@ -235,6 +238,7 @@
 				9C13648E278190AD00B648F5 /* CGPoint+.swift in Sources */,
 				9C1364912781933B00B648F5 /* GameEngine.swift in Sources */,
 				9C78EA5D278172E000ADF2AA /* GameScene.swift in Sources */,
+				9C11DD4527886EB4008645DF /* SelectStageVC.swift in Sources */,
 				9CC270E0278593C800E6EC40 /* Stage.swift in Sources */,
 				9C62101D2782ABF500478A0A /* Date+.swift in Sources */,
 				9C78EA44278172E000ADF2AA /* GameViewController.swift in Sources */,
