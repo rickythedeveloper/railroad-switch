@@ -14,9 +14,7 @@ class StagePage: UIView {
 class SelectStageVC: UIViewController {
     var scrollView: UIScrollView!
     let PAGE_WIDTH: CGFloat = 200
-    let STAGE_VIEW_WIDTH: CGFloat = 80
     let numStages = 10
-    let scrollViewContentTrailingInset: CGFloat = 5000
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,88 +25,66 @@ class SelectStageVC: UIViewController {
         scrollView.alwaysBounceHorizontal = true
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(scrollView)
-        self.view.addConstraints([
-//            view.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
-//            scrollView.widthAnchor.constraint(equalToConstant: PAGE_WIDTH),
-            view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            view.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-        ])
+        view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        view.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
         
         let contentView = UIView()
         contentView.backgroundColor = .blue
-        scrollView.addSubview(contentView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addConstraints([
-            // these 4 make contentView span the whole content
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            
-            // fix contentView height to the height of scrollView (for horizontal scrolling)
-            contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
-        ])
+        scrollView.addSubview(contentView)
+        // make contentView span the whole content
+        contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        // fix contentView height to the height of scrollView (for horizontal scrolling)
+        contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor).isActive = true
         
-        
-        
-        var labels: [UILabel] = []
+        var stageViews: [UILabel] = []
         for n in 0..<numStages {
             let label = UILabel()
-            labels.append(label)
+            stageViews.append(label)
             label.text = "HEY"
             label.backgroundColor = .purple
             label.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(label)
             
-            label.addConstraints([
-                label.widthAnchor.constraint(equalToConstant: STAGE_VIEW_WIDTH),
-                label.heightAnchor.constraint(equalToConstant: STAGE_VIEW_WIDTH),
-            ])
-            
-            contentView.addConstraints([
-                label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            ])
-            
-            
+            label.widthAnchor.constraint(equalToConstant: 100).isActive = true
+            label.heightAnchor.constraint(equalToConstant: 100).isActive = true
+            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
             if n > 0 {
-                scrollView.addConstraint(label.leadingAnchor.constraint(equalTo: labels[n-1].trailingAnchor, constant: PAGE_WIDTH - STAGE_VIEW_WIDTH))
+                label.centerXAnchor.constraint(equalTo: stageViews[n - 1].centerXAnchor, constant: PAGE_WIDTH).isActive = true
             }
         }
         
         let firstSpace = UILayoutGuide()
         contentView.addLayoutGuide(firstSpace)
-        
-        
+        // relationships to the content view
+        firstSpace.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive = true
+        firstSpace.widthAnchor.constraint(equalTo: scrollView.widthAnchor, multiplier: 0.5).isActive = true
+        firstSpace.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        firstSpace.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+        // attach to first label
+        firstSpace.trailingAnchor.constraint(equalTo: stageViews.first!.centerXAnchor).isActive = true
+
         let lastSpace = UILayoutGuide()
         contentView.addLayoutGuide(lastSpace)
-        scrollView.addConstraints([
-            // relationships to the content view
-            firstSpace.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            firstSpace.widthAnchor.constraint(equalTo: scrollView.widthAnchor, multiplier: 0.5),
-            firstSpace.topAnchor.constraint(equalTo: contentView.topAnchor),
-            firstSpace.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            
-            // attach to first label
-            firstSpace.trailingAnchor.constraint(equalTo: labels.first!.centerXAnchor),
-
-            // relationships to the content view
-            lastSpace.widthAnchor.constraint(equalTo: scrollView.widthAnchor, multiplier: 0.5),
-            lastSpace.topAnchor.constraint(equalTo: contentView.topAnchor),
-            lastSpace.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            lastSpace.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            // attach to the last label
-            lastSpace.leadingAnchor.constraint(equalTo: labels.last!.centerXAnchor),
-        ])
+        // relationships to the content view
+        lastSpace.widthAnchor.constraint(equalTo: scrollView.widthAnchor, multiplier: 0.5).isActive = true
+        lastSpace.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        lastSpace.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+        lastSpace.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
+        // attach to the last label
+        lastSpace.leadingAnchor.constraint(equalTo: stageViews.last!.centerXAnchor).isActive = true
     }
 }
 
 extension SelectStageVC: UIScrollViewDelegate {
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         let currentX = scrollView.contentOffset.x
-        let maxX = CGFloat(numStages-1) * PAGE_WIDTH
+        let maxX = CGFloat(numStages - 1) * PAGE_WIDTH
         var nextX: CGFloat
         if currentX < 0 { nextX = 0 }
         else if currentX > maxX { nextX = maxX }
@@ -119,6 +95,4 @@ extension SelectStageVC: UIScrollViewDelegate {
         }
         targetContentOffset.pointee.x = nextX
     }
-    
-    
 }
