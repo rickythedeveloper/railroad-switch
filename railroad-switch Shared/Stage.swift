@@ -47,5 +47,37 @@ let STAGES: [Stage] = [
     ], trainStartTime: [
         TrainInfo(trackIndex: 0, jointIndex: 0, goalJointIndex: 3, startTime: 1.0),
         TrainInfo(trackIndex: 3, jointIndex: 5, goalJointIndex: 0, startTime: 5.0)
-    ])
+    ]),
+    Stage(joints: [
+        JointInfo(position: CGPoint(x: -200, y: 0)),
+        JointInfo(position: CGPoint(x: 0, y: 0)),
+        JointInfo(position: CGPoint(x: 100, y: 0)),
+        JointInfo(position: CGPoint(x: 200, y: 0)),
+        JointInfo(position: CGPoint(x: 100, y: 100)),
+        JointInfo(position: CGPoint(x: 200, y: 100)),
+    ], tracks: [
+        TrackInfo(singleJoint: 0, multiJoint: [1]),
+        TrackInfo(singleJoint: 1, multiJoint: [2, 4], jointIndex: 1),
+        TrackInfo(singleJoint: 2, multiJoint: [3]),
+        TrackInfo(singleJoint: 4, multiJoint: [5]),
+    ], trainStartTime: [
+        TrainInfo(trackIndex: 0, jointIndex: 0, goalJointIndex: 3, startTime: 1.0),
+        TrainInfo(trackIndex: 3, jointIndex: 5, goalJointIndex: 0, startTime: 5.0)
+    ]),
+    Stage(joints: [
+        JointInfo(position: CGPoint(x: -200, y: 0)),
+        JointInfo(position: CGPoint(x: 0, y: 0)),
+        JointInfo(position: CGPoint(x: 100, y: 0)),
+        JointInfo(position: CGPoint(x: 200, y: 0)),
+        JointInfo(position: CGPoint(x: 100, y: 100)),
+        JointInfo(position: CGPoint(x: 200, y: 100)),
+    ], tracks: [
+        TrackInfo(singleJoint: 0, multiJoint: [1]),
+        TrackInfo(singleJoint: 1, multiJoint: [2, 4], jointIndex: 1),
+        TrackInfo(singleJoint: 2, multiJoint: [3]),
+        TrackInfo(singleJoint: 4, multiJoint: [5]),
+    ], trainStartTime: [
+        TrainInfo(trackIndex: 0, jointIndex: 0, goalJointIndex: 3, startTime: 1.0),
+        TrainInfo(trackIndex: 3, jointIndex: 5, goalJointIndex: 0, startTime: 5.0)
+    ]),
 ]

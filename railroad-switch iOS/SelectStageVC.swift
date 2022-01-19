@@ -6,15 +6,12 @@
 //
 
 import UIKit
-
-class StagePage: UIView {
-    var stage: Stage?
-}
+import SpriteKit
 
 class SelectStageVC: UIViewController {
     var scrollView: UIScrollView!
     let PAGE_WIDTH: CGFloat = 200
-    let numStages = 10
+    let numStages = STAGES.count
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +54,11 @@ class SelectStageVC: UIViewController {
             if n > 0 {
                 label.centerXAnchor.constraint(equalTo: stageViews[n - 1].centerXAnchor, constant: PAGE_WIDTH).isActive = true
             }
+            
+            label.isUserInteractionEnabled = true
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(stageTapped))
+            label.addGestureRecognizer(tapGesture)
+            label.tag = n
         }
         
         let firstSpace = UILayoutGuide()
@@ -78,6 +80,34 @@ class SelectStageVC: UIViewController {
         lastSpace.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
         // attach to the last label
         lastSpace.leadingAnchor.constraint(equalTo: stageViews.last!.centerXAnchor).isActive = true
+    }
+    
+    @objc private func stageTapped(sender: UITapGestureRecognizer) {
+        if let stageIndex = sender.view?.tag {
+            selectStage(stageIndex)
+        } else { assert(false) }
+    }
+    
+    private func selectStage(_ stageIndex: Int) {
+        print("going to stage \(stageIndex)")
+        let scene = GameScene.newGameScene()
+        let skView = SKView()
+        skView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(skView)
+        
+        skView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
+        skView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
+        skView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
+        skView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
+        
+        skView.presentScene(scene)
+        skView.ignoresSiblingOrder = true
+        skView.showsFPS = true
+        skView.showsNodeCount = true
+        
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { timer in
+            scene.setUpScene(stage: STAGES[stageIndex])
+        }
     }
 }
 

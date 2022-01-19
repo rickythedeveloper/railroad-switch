@@ -80,11 +80,11 @@ class GameScene: SKScene {
     
     #if os(watchOS)
     override func sceneDidLoad() {
-        self.setUpScene()
+//        self.setUpScene()
     }
     #else
     override func didMove(to view: SKView) {
-        self.setUpScene(stage: STAGES[0])
+//        self.setUpScene(stage: STAGES[0])
     }
     #endif
     
